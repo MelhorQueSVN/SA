@@ -1,6 +1,8 @@
+import java.io.Serializable;
+
 import robocode.ScannedRobotEvent;
 
-public class RobotInfo {
+public class RobotInfo implements Serializable{
 	
 	// nome do rôbo
 	private String name; 
@@ -27,8 +29,9 @@ public class RobotInfo {
 		this.heading = 0;
 	}
 	
-	public RobotInfo(String n, double e, double v, double d, double b, double h) { 
-		this.name = n;
+	public RobotInfo(String n,Coordinate c, double e, double v, double d, double b, double h) { 
+		this.name = n; 
+		this.cord = c;
 		this.energy = e; 
 		this.vel = v; 
 		this.dist = d; 
