@@ -1,0 +1,7 @@
+#Robocode robot team
+#Sun Mar 03 15:19:06 WET 2019
+team.members=TeamLeader,Soldier,Soldier,GFTargetingBot,GFTargetingBot
+team.author.name=
+robocode.version=1.9.3.4
+team.description=Nem respiras
+team.version=v1.0

@@ -1,72 +1,100 @@
+
 import java.awt.Color;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.*;
+import robocode.*;
+import robocode.util.Utils;
 
-import robocode.Droid;
-import robocode.HitByBulletEvent;
-import robocode.MessageEvent;
-import robocode.TeamRobot;
-import robocode.util.Utils; 
+public class Soldier extends TeamRobot implements Droid {
 
-import static robocode.util.Utils.normalRelativeAngleDegrees;
+	private int border = 150; 
+	private boolean lider_morreu = false;
 
-/* 
- * 	
- */
-public class Soldier extends TeamRobot implements Droid{
-
-	public void run() { 
-		// Cores do rôbo
-		setColors(Color.blue,Color.red,Color.black); 
-		System.out.println("Meu nome é: " + this.getName());
-		while(true) { 
-			Random r = new Random();  
-			int strategy = r.nextInt(1); 
-			switch(strategy) { 
-				case 1: 
-					setTurnRight(270); 
-					ahead(500);  
-					break; 
-				default: 
-					setTurnLeft(180);
-					ahead(400);
-			}
+	public void run() {
+		// cores do rôbo
+		setColors(new Color(248, 0, 0),new Color(248, 0, 0),Color.black);  
+		setBulletColor(Color.red);
+		
+		while(true) {
+			if(lider_morreu == false) {
+				if(checkCoordinates()){
+					strategy();
+				}else
+					go(getBattleFieldWidth()/2,getBattleFieldHeight()/2);
+			// caso o lider morra começa a fazer movimentos random
+			} else { 
+				
+				// no caso de perder o lider os droids mudam de cor para amarelo
+				setColors(Color.YELLOW,Color.YELLOW,Color.black);  
+				
+				if(checkCoordinates()){
+					strategyRun();
+				} else 
+					go(getBattleFieldWidth()/2,getBattleFieldHeight()/2);
+			}	
 		}
-	}	
+	} 
 	
-	public void onMessageReceived(MessageEvent e) { 
-		// se recebeu uma mensagem com a info do robo scaneado  
-		System.out.println("Não estou a receber\n"); 
-		System.out.println(e.getMessage().toString());
-		if (e.getMessage() instanceof RobotInfo) { 
-			System.out.println("recebi a informação!\n");
-			RobotInfo ri = (RobotInfo) e.getMessage(); 
-			String name = ri.getName(); 
-			Coordinate cord = ri.getCoordinates(); 
-			double energy = ri.getEnergy(); 
-			double vel = ri.getVelocity(); 
-			double dist = ri.getDistance();  
-			double bearing = ri.getBearing(); 
-			double heading = ri.getHeading(); 
-			System.out.println("Nome recebido: " + name); 
-			// Usa o intercept para disparar 
-			Intercept i = new Intercept(); 
-			i.calculate(this.getX(),this.getY(),cord.getX(), cord.getY(), heading, vel, 3, 0);
-			if ((i.impactPoint.getX() > 0) && (i.impactPoint.getX() < getBattleFieldWidth()) && (i.impactPoint.getY() > 0) && (i.impactPoint.getY() < getBattleFieldHeight())) {
-    			orderFire(i.impactPoint.getX(),i.impactPoint.getY());
-			}
+	
+	// verifica as coordenadas relativas do rôbo
+	public boolean checkCoordinates() { 
+		boolean pode = false; 
+		if (getX()>this.border && getY()>this.border 
+		&& getX()<getBattleFieldWidth()-this.border && getY()<getBattleFieldHeight()-this.border)
+			pode = true; 
+		return pode;
+	}
+	
+	// estratégia em condições normais(lider vivo)
+	public void strategy() { 
+		Random r = new Random();
+		int strategy = r.nextInt(1);
+		if(strategy==1){
+			setTurnRight(270);
+			ahead(500);
+		} else{
+			setTurnLeft(180);
+			ahead(400);
+			setTurnRight(180);
+			ahead(400);
 		}
 	}
 	
-	public void orderFire(double x, double y){
-		double dx = x - this.getX();
-		double dy = y - this.getY();
-	
-		double theta = Math.toDegrees(Math.atan2(dx, dy));
-		turnGunRight(normalRelativeAngleDegrees(theta - getGunHeading()));
-		fire(3); 
-		ahead(10);
+	// escolha de estratégia quando o líder morre
+	public void strategyRun() { 
+		Random r = new Random();
+		int strategy = r.nextInt(1); 
+		// random para os degrees que vira e para os pixeis que anda, tendo 2 estratégias que poderá escolher
+		int low = 10;
+		int high = 360;
+		int result = r.nextInt(high-low) + low;
+		int low_p = 50;
+		int high_p = 350;
+		int result_p = r.nextInt(high_p-low_p) + low_p;
+		if (strategy == 1) { 
+			setTurnRight(result); 
+			ahead(result_p);
+		} else { 
+			setTurnLeft(result); 
+			ahead(result_p); 
+			setTurnRight(result); 
+			ahead(result_p-20);
+		}
 	}
-	
+
+	public void onMessageReceived(MessageEvent e) {
+		if (e.getMessage() instanceof RobotInfo) {
+			RobotInfo en = (RobotInfo) e.getMessage();
+			Coordinate cor = new Coordinate(en.getCoordinates());
+			double dx = cor.getX() - this.getX();
+			double dy = cor.getY() - this.getY();
+			double theta = Math.toDegrees(Math.atan2(dx, dy));
+			turnRight(Utils.normalRelativeAngleDegrees(theta - getGunHeading()));
+			fire(3);
+			ahead(100);
+		} 
+	}
+
 	public void onHitByBullet(HitByBulletEvent e) {
 		Random r = new Random();
 		int strategy = r.nextInt(1);
@@ -77,5 +105,50 @@ public class Soldier extends TeamRobot implements Droid{
 			setTurnLeft(60);
 			ahead(100);
 		}
+	}
+
+	public void onHitWall(HitWallEvent e) {
+		Random r = new Random();
+		int strategy = r.nextInt(1);
+		if(e.getBearing() > -90 && e.getBearing() <= 90){
+			if(strategy==1){
+				setTurnRight(45);
+				back(100);
+			}else{
+				setTurnLeft(45);
+				back(100);
+			}
+		}else{
+			if(strategy==1){
+				setTurnRight(45);
+				ahead(100);
+			}else{
+				setTurnLeft(45);
+				ahead(100);
+			}
+		}
+	}
+
+	public void onHitRobot(HitRobotEvent e) {
+		if(!isTeammate(e.getName())){
+			fire(3);
+			ahead(5);
+		}
+	}
+	
+	
+	// se o lider morreu coloca a flag a true e entra em modo de contenção
+	public void onRobotDeath(RobotDeathEvent e) { 
+		if(e.getName().equals("TeamLeader")) { 
+			lider_morreu = true;
+		}
+	}
+	
+	
+	private void go(double x, double y) {
+		x = x - getX(); y = y - getY();
+		double goAngle = Utils.normalRelativeAngle(Math.atan2(x, y) - getHeadingRadians());
+		setTurnRightRadians(Math.atan(Math.tan(goAngle)));
+		ahead(Math.cos(goAngle) * Math.hypot(x, y));
 	}
 }
