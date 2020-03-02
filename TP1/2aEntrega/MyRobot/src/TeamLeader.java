@@ -231,13 +231,15 @@ public class TeamLeader extends TeamRobot{
 		}
 		
 		Random r = new Random();
-		int strategy = r.nextInt(1);
-		if(strategy==1){
-			setTurnRight(60);
-			ahead(100);
-		}else{
-			setTurnLeft(60);
-			ahead(100);
+		int estrategia = r.nextInt(1);
+		switch(estrategia) { 
+			case 1: 
+				setTurnLeft(50); 
+				ahead(150);  
+				break;
+			default: 
+				setTurnRight(50); 
+				ahead(150);
 		}
 	}
 
@@ -248,22 +250,26 @@ public class TeamLeader extends TeamRobot{
 	public void onHitRobot(HitRobotEvent e) {
 		
 		Random r = new Random();
-		int strategy = r.nextInt(1);
+		int estrategia = r.nextInt(1);
 		if(e.getBearing() > -90 && e.getBearing() <= 90){
-			if(strategy==1){
-				setTurnRight(45);
-				back(200);
-			}else{
-				setTurnLeft(45);
-				back(200);
-			}
+			switch(estrategia) { 
+			case 1: 
+				setTurnLeft(45); 
+				ahead(150); 
+				break; 
+			default: 
+				setTurnRight(45); 
+				ahead(150); 
+		}
 		}else{
-			if(strategy==1){
-				setTurnRight(45);
-				ahead(200);
-			}else{
-				setTurnLeft(45);
-				ahead(200);
+			switch(estrategia) { 
+			case 1: 
+				setTurnLeft(45); 
+				ahead(150); 
+				break; 
+			default: 
+				setTurnRight(45); 
+				ahead(150);
 			}
 		}
 	}
@@ -280,7 +286,8 @@ public class TeamLeader extends TeamRobot{
 	}
 	
 	private void go(double x, double y) {
-		x = x - getX(); y = y - getY();
+		x = x - getX(); 
+		y = y - getY();
 		double goAngle = Utils.normalRelativeAngle(Math.atan2(x, y) - getHeadingRadians());
 		setTurnRightRadians(Math.atan(Math.tan(goAngle)));
 		ahead(Math.cos(goAngle) * Math.hypot(x, y));

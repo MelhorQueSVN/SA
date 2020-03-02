@@ -18,7 +18,7 @@ public class Soldier extends TeamRobot implements Droid {
 		while(true) {
 			if(lider_morreu == false) {
 				if(checkCoordinates()){
-					strategy();
+					estrategiaNormal();
 				}else
 					go(getBattleFieldWidth()/2,getBattleFieldHeight()/2);
 			// caso o lider morra começa a fazer movimentos random
@@ -28,7 +28,7 @@ public class Soldier extends TeamRobot implements Droid {
 				setColors(Color.YELLOW,Color.YELLOW,Color.black);  
 				
 				if(checkCoordinates()){
-					strategyRun();
+					estrategiaFuga();
 				} else 
 					go(getBattleFieldWidth()/2,getBattleFieldHeight()/2);
 			}	
@@ -46,22 +46,24 @@ public class Soldier extends TeamRobot implements Droid {
 	}
 	
 	// estratégia em condições normais(lider vivo)
-	public void strategy() { 
+	public void estrategiaNormal() { 
 		Random r = new Random();
 		int strategy = r.nextInt(1);
-		if(strategy==1){
-			setTurnRight(270);
-			ahead(500);
-		} else{
-			setTurnLeft(180);
-			ahead(400);
-			setTurnRight(180);
-			ahead(400);
+		switch(strategy) { 
+			case 1:
+				setTurnRight(270); 
+				ahead(500);
+				break;
+			default: 
+				setTurnLeft(180); 
+				ahead(400); 
+				setTurnRight(180); 
+				ahead(400);
 		}
 	}
 	
 	// escolha de estratégia quando o líder morre
-	public void strategyRun() { 
+	public void estrategiaFuga() { 
 		Random r = new Random();
 		int strategy = r.nextInt(1); 
 		// random para os degrees que vira e para os pixeis que anda, tendo 2 estratégias que poderá escolher
@@ -71,14 +73,18 @@ public class Soldier extends TeamRobot implements Droid {
 		int low_p = 50;
 		int high_p = 350;
 		int result_p = r.nextInt(high_p-low_p) + low_p;
-		if (strategy == 1) { 
-			setTurnRight(result); 
-			ahead(result_p);
-		} else { 
-			setTurnLeft(result); 
-			ahead(result_p); 
-			setTurnRight(result); 
-			ahead(result_p-20);
+		switch(strategy) { 
+			case 1: 
+				setTurnRight(result); 
+				ahead(result_p);  
+				setTurnLeft(result); 
+				ahead(result_p-20);
+				break; 
+			default: 
+				setTurnLeft(result); 
+				ahead(result_p); 
+				setTurnRight(result); 
+				ahead(result_p-20); 
 		}
 	}
 
@@ -97,34 +103,40 @@ public class Soldier extends TeamRobot implements Droid {
 
 	public void onHitByBullet(HitByBulletEvent e) {
 		Random r = new Random();
-		int strategy = r.nextInt(1);
-		if(strategy==1){
-			setTurnRight(60);
-			ahead(100);
-		}else{
-			setTurnLeft(60);
-			ahead(100);
+		int estrategia = r.nextInt(1);
+		switch(estrategia) { 
+			case 1: 
+				setTurnRight(60); 
+				ahead(100); 
+				break; 
+			default: 
+				setTurnLeft(60); 
+				ahead(100);
 		}
 	}
 
 	public void onHitWall(HitWallEvent e) {
 		Random r = new Random();
-		int strategy = r.nextInt(1);
+		int estrategia = r.nextInt(1);
 		if(e.getBearing() > -90 && e.getBearing() <= 90){
-			if(strategy==1){
-				setTurnRight(45);
-				back(100);
-			}else{
-				setTurnLeft(45);
-				back(100);
-			}
+			switch(estrategia) { 
+			case 1: 
+				setTurnLeft(45); 
+				ahead(150); 
+				break; 
+			default: 
+				setTurnRight(45); 
+				ahead(150); 
+		}
 		}else{
-			if(strategy==1){
-				setTurnRight(45);
-				ahead(100);
-			}else{
-				setTurnLeft(45);
-				ahead(100);
+			switch(estrategia) { 
+			case 1: 
+				setTurnLeft(45); 
+				ahead(150); 
+				break; 
+			default: 
+				setTurnRight(45); 
+				ahead(150);
 			}
 		}
 	}
@@ -146,7 +158,8 @@ public class Soldier extends TeamRobot implements Droid {
 	
 	
 	private void go(double x, double y) {
-		x = x - getX(); y = y - getY();
+		x = x - getX();
+		y = y - getY();
 		double goAngle = Utils.normalRelativeAngle(Math.atan2(x, y) - getHeadingRadians());
 		setTurnRightRadians(Math.atan(Math.tan(goAngle)));
 		ahead(Math.cos(goAngle) * Math.hypot(x, y));
